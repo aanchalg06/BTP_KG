@@ -1,0 +1,65 @@
+\documentclass{article}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+
+\begin{document}
+
+\begin{algorithm}[H]
+    \SetAlgoLined
+    \SetKwData{True}{true}
+    \SetKwFunction{FMain}{main}
+    \SetKwFunction{FAddEdge}{addEdge}
+    \SetKwFunction{FDfs}{dfs}
+    \SetKwFunction{FGetComponents}{getComponents}
+    \SetKwFunction{FEdgeExists}{edgeExists}
+    \SetKwFunction{FPrintGraph}{printGraph}
+    \SetKwFunction{FNumberOfNodes}{numberOfNodes}
+    \SetKwFunction{FNumberOfComponents}{numberOfComponents}
+
+    \SetKwProg{Fn}{Function}{:}{}
+
+    \Fn{\FMain}{
+        \texttt{graphs} $\gets$ []\;  % Initialize an empty list to hold graphs
+        \texttt{inputStrings} $\gets$ ["A,B,C", "D,E,F", "J,G,C", "F,H,Q", "A,I,C", "D,X,Q", "D,X,F", "A,M,C"]\;  % Define input strings
+
+        \For{\texttt{str} \textbf{in} \texttt{inputStrings}}{
+            \texttt{tuple} $\gets$ \texttt{str.split(",")}\;  % Split the string into a tuple of nodes
+            \texttt{node1} $\gets$ \texttt{tuple[0]}\;  % Extract the first node
+            \texttt{node2} $\gets$ \texttt{tuple[2]}\;  % Extract the third node
+
+            \texttt{edgeExistsInAllGraphs} $\gets$ \True\;  % Assume edge exists in all graphs
+            \For{\texttt{graph} \textbf{in} \texttt{graphs}}{
+                \If{\textbf{not} \texttt{graph.edgeExists(node1, node2)}}{
+                    \texttt{edgeExistsInAllGraphs} $\gets$ \textbf{false}\;  % Update flag if edge does not exist in a graph
+                    \textbf{break}\;  % Break the loop early
+                }
+            }
+
+            \If{\texttt{edgeExistsInAllGraphs}}{
+                \texttt{newGraph} $\gets$ \texttt{Graph()}\;  % Create a new graph
+                \texttt{newGraph.addEdge(node1, node2)}\;  % Add the edge to the new graph
+                \texttt{graphs.append(newGraph)}\;  % Append the new graph to the list of graphs
+            }
+            \Else{
+                \For{\texttt{graph} \textbf{in} \texttt{graphs}}{
+                    \If{\textbf{not} \texttt{graph.edgeExists(node1, node2)}}{
+                        \texttt{graph.addEdge(node1, node2)}\;  % Add the edge to an existing graph
+                        \textbf{break}\;  % Break the loop early
+                    }
+                }
+            }
+        }
+
+        \For{$i \gets 0$ \KwTo \texttt{graphs.size()} $- 1$}{
+            \texttt{graph} $\gets$ \texttt{graphs[i]}\;  % Get each graph from the list
+            \textbf{print}("Graph-" + (\texttt{i + 1}))\;  % Print the graph label
+            \texttt{graph.printGraph()}\;  % Print the graph structure
+            \textbf{print}("Number of nodes: " + \texttt{graph.numberOfNodes()})\;  % Print the number of nodes
+            \textbf{print}("Number of components: " + \texttt{graph.numberOfComponents()})\;  % Print the number of components
+            \textbf{print}()\;  % Print a blank line for separation
+        }
+    }
+
+    \caption{Graph of Triples}
+\end{algorithm}
+
+\end{document}
