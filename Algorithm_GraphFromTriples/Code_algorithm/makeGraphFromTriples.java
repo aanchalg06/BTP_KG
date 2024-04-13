@@ -112,9 +112,39 @@ class Graph {
     public int numberOfComponents() {
         return getComponents().size();
     }
+
+    // Method to collect all pos elements present in the graph nodes
+    public Set<String> collectPosElements() {
+        Set<String> posElements = new HashSet<>();
+        for (String key : nodes.keySet()) {
+            List<String> values = nodes.get(key).values;
+            posElements.addAll(values);
+        }
+        return posElements;
+    }
+
+    // Method to count the number of pos elements in the graph nodes
+    public int countPosElements() {
+        Set<String> posElements = collectPosElements();
+        return posElements.size();
+    }
 }
 
 public class Main {
+    static double calculate_d(Graph graph, int n_ideal, int n_nonideal) {
+    double numberOfNodes = (double) graph.numberOfNodes();
+    double numberOfComponents = (double) graph.numberOfComponents();
+
+    double term1 = Math.abs(1.0 - numberOfNodes / (double) n_nonideal);
+    double term2 = Math.abs(n_ideal - n_nonideal);
+    double term3 = Math.abs(1.0 - numberOfComponents);
+    
+    System.out.println(term1 + term2 + term3);
+
+    return term1 + term2 + term3;
+}
+
+    
     public static void main(String[] args) {
         // List of created graphs
         List<Graph> graphs = new ArrayList<>();
@@ -126,7 +156,8 @@ public class Main {
             {"Turn Me On", "is", "a 35.1 minute long album"},
             {"a 35.1 minute long album", "be produced", "by Wharton Tiers"},
             {"Wharton Tiers", "was followed", "by the album entitled Take it Off"},
-            {"the album", "be entitled", "Take it Off"},{"Turn Me On", "are", "a 35.1 minute long album produced by Wharton Tiers"}
+            {"the album", "be entitled", "Take it Off"},
+            {"Turn Me On", "are", "a 35.1 minute long album produced by Wharton Tiers"}
         };
 
         // Processing input strings
@@ -175,6 +206,8 @@ public class Main {
         }
 
         // Printing details of each graph
+        int[] posElementCounts = new int[graphs.size()];
+
         for (int i = 0; i < graphs.size(); i++) {
             Graph graph = graphs.get(i);
             System.out.println("Graph-" + (i + 1));
@@ -183,6 +216,9 @@ public class Main {
             System.out.println("Number of components: " + graph.numberOfComponents());
             System.out.println();
 
+            // Count pos elements in the graph
+            posElementCounts[i] = graph.countPosElements();
+
             // Print all ArrayList of nodes
             System.out.println("ArrayList of nodes in Graph-" + (i + 1) + ":");
             for (String key : graph.nodes.keySet()) {
@@ -190,6 +226,24 @@ public class Main {
                 System.out.println("Node [" + String.join(", ", values) + "]");
             }
             System.out.println();
+
+            // Collect all pos elements present in the graph nodes
+            Set<String> posElements = graph.collectPosElements();
+            System.out.println("All pos elements in Graph-" + (i + 1) + ": " + posElements);
+            System.out.println();
         }
+
+        // Print array of pos element counts
+        System.out.println("Number of pos elements in each graph:");
+        for (int i = 0; i < posElementCounts.length; i++) {
+            System.out.println("Graph-" + (i + 1) + ": " + posElementCounts[i]);
+        }
+        
+        double sum=0;
+        for(int i=0;i<graphs.size();i++){
+            sum+= calculate_d(graphs.get(i),pos.length, posElementCounts[i]);
+        }
+        
+        System.out.println("Metric sum is "+sum);
     }
 }
