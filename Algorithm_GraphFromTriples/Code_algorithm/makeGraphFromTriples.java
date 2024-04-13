@@ -132,51 +132,48 @@ class Graph {
 
 public class Main {
     static double calculate_d(Graph graph, int n_ideal, int n_nonideal) {
-    double numberOfNodes = (double) graph.numberOfNodes();
-    double numberOfComponents = (double) graph.numberOfComponents();
+        double numberOfNodes = (double) graph.numberOfNodes();
+        double numberOfComponents = (double) graph.numberOfComponents();
 
-    double term1 = Math.abs(1.0 - numberOfNodes / (double) n_nonideal);
-    double term2 = Math.abs(n_ideal - n_nonideal);
-    double term3 = Math.abs(1.0 - numberOfComponents);
-    
-    System.out.println(term1 + term2 + term3);
+        double term1 = Math.abs(1.0 - numberOfNodes / (double) n_nonideal);
+        double term2 = Math.abs(n_ideal - n_nonideal);
+        double term3 = Math.abs(1.0 - numberOfComponents);
 
-    return term1 + term2 + term3;
-}
+        return term1 + term2 + term3;
+    }
 
-    
     public static void main(String[] args) {
         // List of created graphs
         List<Graph> graphs = new ArrayList<>();
 
         // Sample input strings
-        String[] pos = {"Me", "a 35.1 minute long album", "Wharton Tiers", "that", "the album", "it"};
-        String[][] inputStrings = {
-            {"Turn Me On", "is", "a 35.1 minute long album produced by Wharton Tiers"},
-            {"Turn Me On", "is", "a 35.1 minute long album"},
-            {"a 35.1 minute long album", "be produced", "by Wharton Tiers"},
-            {"Wharton Tiers", "was followed", "by the album entitled Take it Off"},
-            {"the album", "be entitled", "Take it Off"},
-            {"Turn Me On", "are", "a 35.1 minute long album produced by Wharton Tiers"}
-        };
+        List<String> pos = Arrays.asList("Me", "a 35.1 minute long album", "Wharton Tiers", "that", "the album", "it");
+        List<List<String>> inputStrings = Arrays.asList(
+            Arrays.asList("Turn Me On", "is", "a 35.1 minute long album produced by Wharton Tiers"),
+            Arrays.asList("Turn Me On", "is", "a 35.1 minute long album"),
+            Arrays.asList("a 35.1 minute long album", "be produced", "by Wharton Tiers"),
+            Arrays.asList("Wharton Tiers", "was followed", "by the album entitled Take it Off"),
+            Arrays.asList("the album", "be entitled", "Take it Off"),
+            Arrays.asList("Turn Me On", "are", "a 35.1 minute long album produced by Wharton Tiers")
+        );
 
         // Processing input strings
-        for (String[] tuple : inputStrings) {
-            String node1 = tuple[0];
-            String relation = tuple[1];
-            String node2 = tuple[2];
+        for (List<String> tuple : inputStrings) {
+            String node1 = tuple.get(0);
+            String relation = tuple.get(1);
+            String node2 = tuple.get(2);
 
             List<String> nodeList1 = new ArrayList<>();
             List<String> nodeList2 = new ArrayList<>();
 
-            // Find matching elements in pos array for node1
+            // Find matching elements in pos list for node1
             for (String word : pos) {
                 if (node1.toLowerCase().contains(word.toLowerCase())) {
                     nodeList1.add(word);
                 }
             }
 
-            // Find matching elements in pos array for node2
+            // Find matching elements in pos list for node2
             for (String word : pos) {
                 if (node2.toLowerCase().contains(word.toLowerCase())) {
                     nodeList2.add(word);
@@ -238,12 +235,12 @@ public class Main {
         for (int i = 0; i < posElementCounts.length; i++) {
             System.out.println("Graph-" + (i + 1) + ": " + posElementCounts[i]);
         }
-        
-        double sum=0;
-        for(int i=0;i<graphs.size();i++){
-            sum+= calculate_d(graphs.get(i),pos.length, posElementCounts[i]);
+
+        // Calculate and print the metric sum
+        double sum = 0;
+        for (int i = 0; i < graphs.size(); i++) {
+            sum += calculate_d(graphs.get(i), pos.size(), posElementCounts[i]);
         }
-        
-        System.out.println("Metric sum is "+sum);
+        System.out.println("Metric sum is " + sum);
     }
 }
