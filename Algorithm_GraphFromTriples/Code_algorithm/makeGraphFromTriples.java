@@ -1,14 +1,12 @@
-//I am taking a set of triples
-
 import java.util.*;
 
 // Class to represent a graph node
 class GraphNode {
-    String value;
+    List<String> values;
     List<String> adjacentNodes;
 
-    public GraphNode(String value) {
-        this.value = value;
+    public GraphNode(List<String> values) {
+        this.values = values;
         this.adjacentNodes = new ArrayList<>();
     }
 }
@@ -22,24 +20,36 @@ class Graph {
     }
 
     // Method to add an edge between two nodes (undirected)
-    public void addEdge(String node1, String node2) {
-        if (!nodes.containsKey(node1)) {
-            nodes.put(node1, new GraphNode(node1));
+    public void addEdge(List<String> node1, List<String> node2) {
+        String key1 = getKey(node1);
+        String key2 = getKey(node2);
+
+        if (!nodes.containsKey(key1)) {
+            nodes.put(key1, new GraphNode(node1));
         }
-        if (!nodes.containsKey(node2)) {
-            nodes.put(node2, new GraphNode(node2));
+        if (!nodes.containsKey(key2)) {
+            nodes.put(key2, new GraphNode(node2));
         }
-        nodes.get(node1).adjacentNodes.add(node2);
-        nodes.get(node2).adjacentNodes.add(node1); // Adding for undirected graph
+        nodes.get(key1).adjacentNodes.add(key2);
+        nodes.get(key2).adjacentNodes.add(key1); // Adding for undirected graph
+    }
+
+    // Helper method to get a string key from a list of values
+    private String getKey(List<String> values) {
+        StringBuilder keyBuilder = new StringBuilder();
+        for (String value : values) {
+            keyBuilder.append(value.toLowerCase()).append("_");
+        }
+        return keyBuilder.toString();
     }
 
     // Method to perform depth-first search
-    private void dfs(String node, Set<String> visited, List<String> component) {
-        visited.add(node);
-        component.add(node);
-        for (String adj : nodes.get(node).adjacentNodes) {
-            if (!visited.contains(adj)) {
-                dfs(adj, visited, component);
+    private void dfs(String key, Set<String> visited, List<String> component) {
+        visited.add(key);
+        component.addAll(nodes.get(key).values);
+        for (String adjKey : nodes.get(key).adjacentNodes) {
+            if (!visited.contains(adjKey)) {
+                dfs(adjKey, visited, component);
             }
         }
     }
@@ -48,40 +58,46 @@ class Graph {
     public List<List<String>> getComponents() {
         Set<String> visited = new HashSet<>();
         List<List<String>> components = new ArrayList<>();
-        for (String node : nodes.keySet()) {
-            if (!visited.contains(node)) {
+        for (String key : nodes.keySet()) {
+            if (!visited.contains(key)) {
                 List<String> component = new ArrayList<>();
-                dfs(node, visited, component);
+                dfs(key, visited, component);
                 components.add(component);
             }
         }
         return components;
     }
 
-    // Method to check if an edge exists in all existing graphs
-    public boolean edgeExistsInAllGraphs(String node1, String node2, List<Graph> graphs) {
-        for (Graph graph : graphs) {
-            if (!graph.edgeExists(node1, node2)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     // Method to check if an edge exists
-    public boolean edgeExists(String node1, String node2) {
-        if (!nodes.containsKey(node1) || !nodes.containsKey(node2)) {
-            return false;
-        }
-        return nodes.get(node1).adjacentNodes.contains(node2) || nodes.get(node2).adjacentNodes.contains(node1);
+    public boolean edgeExists(List<String> node1, List<String> node2) {
+        String key1 = getKey(node1);
+        String key2 = getKey(node2);
+        return nodes.containsKey(key1) && nodes.containsKey(key2) &&
+               nodes.get(key1).adjacentNodes.contains(key2);
     }
 
     // Method to print the graph
     public void printGraph() {
-        for (GraphNode node : nodes.values()) {
-            System.out.print("Node " + node.value + " --> ");
-            for (String adj : node.adjacentNodes) {
-                System.out.print(adj + " ");
+        for (String key : nodes.keySet()) {
+            List<String> values = nodes.get(key).values;
+            System.out.print("Node [");
+            for (int i = 0; i < values.size(); i++) {
+                System.out.print(values.get(i));
+                if (i < values.size() - 1) {
+                    System.out.print(", ");
+                }
+            }
+            System.out.print("] --> ");
+            for (String adjKey : nodes.get(key).adjacentNodes) {
+                List<String> adjValues = nodes.get(adjKey).values;
+                System.out.print("[");
+                for (int i = 0; i < adjValues.size(); i++) {
+                    System.out.print(adjValues.get(i));
+                    if (i < adjValues.size() - 1) {
+                        System.out.print(", ");
+                    }
+                }
+                System.out.print("] ");
             }
             System.out.println();
         }
@@ -104,17 +120,41 @@ public class Main {
         List<Graph> graphs = new ArrayList<>();
 
         // Sample input strings
-        String[] inputStrings = {"A,B,C", "D,E,F", "J,G,C", "F,H,Q", "A,I,C","D,X,Q","D,X,F","A,M,C"};
+        String[] pos = {"Me", "a 35.1 minute long album", "Wharton Tiers", "that", "the album", "it"};
+        String[][] inputStrings = {
+            {"Turn Me On", "is", "a 35.1 minute long album produced by Wharton Tiers"},
+            {"Turn Me On", "is", "a 35.1 minute long album"},
+            {"a 35.1 minute long album", "be produced", "by Wharton Tiers"},
+            {"Wharton Tiers", "was followed", "by the album entitled Take it Off"},
+            {"the album", "be entitled", "Take it Off"},{"Turn Me On", "are", "a 35.1 minute long album produced by Wharton Tiers"}
+        };
 
         // Processing input strings
-        for (String str : inputStrings) {
-            String[] tuple = str.split(",");
+        for (String[] tuple : inputStrings) {
             String node1 = tuple[0];
+            String relation = tuple[1];
             String node2 = tuple[2];
+
+            List<String> nodeList1 = new ArrayList<>();
+            List<String> nodeList2 = new ArrayList<>();
+
+            // Find matching elements in pos array for node1
+            for (String word : pos) {
+                if (node1.toLowerCase().contains(word.toLowerCase())) {
+                    nodeList1.add(word);
+                }
+            }
+
+            // Find matching elements in pos array for node2
+            for (String word : pos) {
+                if (node2.toLowerCase().contains(word.toLowerCase())) {
+                    nodeList2.add(word);
+                }
+            }
 
             boolean edgeExistsInAllGraphs = true;
             for (Graph graph : graphs) {
-                if (!graph.edgeExists(node1, node2)) {
+                if (!graph.edgeExists(nodeList1, nodeList2)) {
                     edgeExistsInAllGraphs = false;
                     break;
                 }
@@ -122,12 +162,12 @@ public class Main {
 
             if (edgeExistsInAllGraphs) {
                 Graph newGraph = new Graph();
-                newGraph.addEdge(node1, node2);
+                newGraph.addEdge(nodeList1, nodeList2);
                 graphs.add(newGraph);
             } else {
                 for (Graph graph : graphs) {
-                    if (!graph.edgeExists(node1, node2)) {
-                        graph.addEdge(node1, node2);
+                    if (!graph.edgeExists(nodeList1, nodeList2)) {
+                        graph.addEdge(nodeList1, nodeList2);
                         break;
                     }
                 }
@@ -142,34 +182,14 @@ public class Main {
             System.out.println("Number of nodes: " + graph.numberOfNodes());
             System.out.println("Number of components: " + graph.numberOfComponents());
             System.out.println();
+
+            // Print all ArrayList of nodes
+            System.out.println("ArrayList of nodes in Graph-" + (i + 1) + ":");
+            for (String key : graph.nodes.keySet()) {
+                List<String> values = graph.nodes.get(key).values;
+                System.out.println("Node [" + String.join(", ", values) + "]");
+            }
+            System.out.println();
         }
     }
 }
-
-// Input:
-// String[] inputStrings = {"A,B,C", "D,E,F", "J,G,C", "F,H,Q", "A,I,C","D,X,Q","D,X,F","A,M,C"};
-
-//Output:
-// Graph-1
-// Node A --> C 
-// Node Q --> F D 
-// Node C --> A J 
-// Node D --> F Q 
-// Node F --> D Q 
-// Node J --> C 
-// Number of nodes: 6
-// Number of components: 2
-
-// Graph-2
-// Node A --> C 
-// Node C --> A 
-// Node D --> F 
-// Node F --> D 
-// Number of nodes: 4
-// Number of components: 2
-
-// Graph-3
-// Node A --> C 
-// Node C --> A 
-// Number of nodes: 2
-// Number of components: 1
